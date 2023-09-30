@@ -72,3 +72,26 @@ Refer to [Package JSON](package.json) file
 - While inside `functions/url-shortener` path, run `nom run build` command after you made your desired code changes
 - Go back to the root folder and run `appwrite deploy function` command. Follow the steps to deploy your function. 
 - If needed, refer back to [Manual Setup section](#manual-setup)
+
+## How to use
+
+### Routes
+
+- `/` - Shows a static generator [template](functions/url-shortener/dev/ui/index.html) and generated backend resources in the background if they do not exist.
+- `/generate-short-url`:
+- - Generates Short URL record
+- - Allows POST method only
+- - Must have `'Content-Type': 'application/json'` header
+- - Allowed payload example:
+```
+  JSON.stringify({
+    alias: ALIAS VALUE,
+    url: URL VALUE
+  })
+```
+- `/my-short-urls` - Gets your short url records
+- - It will return 100 at the time. if you have more than 100 records, you need to update code to show more.
+- - Allows only POST method
+- - Must have `'Content-Type': 'application/json'` header
+
+Refer to the [template](functions/url-shortener/dev/ui/index.html) to see how it is used in the simple frontend.

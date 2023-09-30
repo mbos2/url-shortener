@@ -1,0 +1,24 @@
+{
+    "projectId": "url-shortener",
+    "projectName": "URL Shortener",
+    "functions": [
+        {
+            "$id": "6510ac4b1043e0009acd1e2e",
+            "name": "URL Shortener Function",
+            "runtime": "node-18.0",
+            "execute": ["any"],
+            "events": [],
+            "schedule": "",
+            "timeout": 120,
+            "enabled": true,
+            "logging": true,
+            "entrypoint": "src/main.js",
+            "commands": "npm install",
+            "ignore": [
+                "node_modules",
+                ".npm"
+            ],
+            "path": "functions/url-shortener"
+        }
+    ]
+}

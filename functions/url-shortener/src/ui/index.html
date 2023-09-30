@@ -1,0 +1,334 @@
+<html>
+<head>
+  <title>URL Shortener</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" integrity="sha512-b2QcS5SsA8tZodcDtGRELiGv5SaKSk1vDHDaQRda0htPYWZ6046lr3kJ5bAAQdpV2mmA/4v0wQF9MyU6/pDIAg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Indie+Flower&family=Onest:wght@100;200;300;400;500;600;700;800;900&family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&family=Source+Sans+3:ital,wght@1,200;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
+
+<style>
+  body {
+  background-color: #fff;
+  font-family: 'Onest', sans-serif;
+}
+
+.container-top {
+  background: rgb(15,15,15);
+  background: linear-gradient(90deg, rgba(15,15,15,1) 0%, rgba(54,54,54,1) 100%);
+  color: white;
+  padding: 1rem;
+  padding-bottom: 4rem;
+  & h1 {
+    margin-top: 100px;
+    text-align :center;
+    letter-spacing: 2px;
+
+    &.flexed-heading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 24px;
+
+      @media screen and (max-width: 400px) {
+        flex-direction: column;
+      }
+    }
+  }
+
+  & p {
+    text-align :center;
+    letter-spacing: 2px;
+  }
+}
+
+/* Default styling for the divider */
+.divider {
+  width: 20%; /* Set the default width for large screens */
+  height: 1px; /* Set the height to create a horizontal line */
+  background: #e6e6e6;
+  margin: 0 auto; /* Center the divider horizontally */
+
+  &.dark {
+    background: #333;
+  }
+}
+
+/* Media query for mobile screens */
+@media (max-width: 767px) {
+  .divider {
+    width: 90%; /* Set the width for mobile screens */
+  }
+}
+</style>
+
+</head>
+<body>
+  <div class="container-top">
+    <div id="alert" class="absolute d-flex sticky gap-1 alert alert-info fade show visually-hidden justify-content-end align-items-end" style="width: fit-content; float: right;" role="alert">
+      <span id="message" class="text-center"></span>
+      <button onclick="hideAlertContainer()" type="button" class="btn-close" aria-label="Close"></button>
+    </div>
+    <h1 class="flexed-heading">
+      <a target="_blank" href="https://github.com/mbos2/url-shortener" type="button" class="btn btn-outline-light btn-lg px-3 py-2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-github" viewBox="0 0 16 16">
+          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path>
+        </svg>
+        <span class="visually-hidden">Github</span>
+      </a>
+      <span>URL Shortener</span>
+    </h1>
+    <p>Create your own collection of Short URLs for free!</p>
+    <div class="divider"></div>
+    <div class="container-md w-40 mt-4">
+      <div class="input-group mb-3">
+        <input required id="alias" type="text" class="form-control" placeholder="URL Alias" aria-label="RL Alias" aria-describedby="button-addon2">
+      </div>
+      <div class="input-group mb-3">
+        <input required id="url" type="text" class="form-control" placeholder="Place your URL here" aria-label="Place your URL here" aria-describedby="button-addon2">
+      </div>
+      <div class="input-group mb-3">
+        <button onclick="generateUrl()" class="btn btn-outline-light" type="button" id="button-addon2">Shorten It</button>
+      </div>
+      <div class="mt-4 mb-4 d-flex w-full align-items-center justify-content-center">
+        <div id="spinner" class="spinner-border text-light d-none" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+      <div id="url" class="d-flex flex-wrap flex-column justify-content-center align-items-center m-auto mt-4">
+        <h2 class="text-center">URL </h2>
+        <a class="fs-3 link-underline-light text-light text-break" href="" target="_blank" id="url-value"></a>
+      </div>
+      <div id="social-media-buttons" class="mt-4 d-flex justify-content-center gap-4"></div>
+    </div>
+  </div>
+  <div class="container-bottom mt-4">
+    <h1 class="text-center mt-4 mb-4">Your URLs</h1>
+    <div class="d-flex align-items-center justify-content-center">
+      <button onclick="getMyUrls(0)" class="btn btn-outline-dark" type="button" id="button-addon2">Load My URLS</button>
+    </div>
+    <div class="mt-4 mb-4 d-flex w-full align-items-center justify-content-center">
+      <div id="spinner-table" class="spinner-border text-dark d-none" role="status">
+        <span class="visually-hidden">Loading table...</span>
+      </div>
+    </div>
+    <div class="divider dark"></div>
+    <div class="container-lg table-responsive px-4">
+      <table class="table table-light table-hover table-striped mt-4 mb-4">
+        <thead class="table-dark">
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Alias</th>
+            <th scope="col">Short URL</th>
+            <th scope="col">Original URL</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+  <script>
+    const domain = 'https://6515fbdc6a7b8aa04c45.appwrite.global';
+    const aliasInput = document.querySelector('#alias');
+    const urlInput = document.querySelector('#url');
+    const spinner = document.querySelector('#spinner');
+    const spinnerTable = document.querySelector('#spinner-table');
+    const alertContainer = document.querySelector('#alert');
+    const messageContainer = document.querySelector('#message');
+    const socialMediaContainer = document.querySelector('#social-media-buttons');
+    const urlValue = document.querySelector('#url-value');
+
+    const generateTwitterButton = (url) => {
+      console.log(url)
+      const btnLink = document.createElement('a');
+      btnLink.setAttribute('href', `https://twitter.com/intent/tweet?text=Check out this URL: ${url}`);
+      btnLink.setAttribute('target', '_blank');
+      btnLink.setAttribute('class', 'btn btn-outline-light');
+
+      const btnIcon = document.createElement('i');
+      btnIcon.setAttribute('class', 'bi bi-twitter');
+      btnIcon.setAttribute('style', 'font-size: 1.5rem;');
+      btnLink.appendChild(btnIcon);
+ 
+      socialMediaContainer.appendChild(btnLink);
+    }
+
+    const generateFacebookButton = (url) => {
+      const btnLink = document.createElement('a');
+      btnLink.setAttribute('href', `https://www.facebook.com/sharer/sharer.php?u=${url}&quote=Check%20out%20this%2URL`);
+      btnLink.setAttribute('target', '_blank');
+      btnLink.setAttribute('class', 'btn btn-outline-light');
+
+      const btnIcon = document.createElement('i');
+      btnIcon.setAttribute('class', 'bi bi-facebook');
+      btnIcon.setAttribute('style', 'font-size: 1.5rem;');
+      btnLink.appendChild(btnIcon);
+ 
+      socialMediaContainer.appendChild(btnLink);
+    }
+
+    const clearValues = () => {
+      urlValue.innerHTML = '';
+      urlValue.setAttribute('href', '');
+    }
+
+    const showSpinner = () => {
+      spinner.classList.remove('d-none');
+    }
+
+    const hideSpinner = () => {
+      spinner.classList.add('d-none');
+    }
+
+    const showSpinnerTable = () => {
+      spinnerTable.classList.remove('d-none');
+    }
+
+    const hideSpinnerTable = () => {
+      spinnerTable.classList.add('d-none');
+    }
+
+    const showAlertContainer = (message) => {
+      messageContainer.innerText = message;
+      alertContainer.classList.remove('visually-hidden');
+    }
+
+    const hideAlertContainer = () => {
+      alertContainer.classList.add('visually-hidden');
+      messageContainer.innerText = "";
+    }
+
+    const generateUrl = async () => {
+      clearValues();
+      showSpinner();
+      const aliasValueTrim = aliasInput.value.trim();
+      const urlValueTrim = urlInput.value.trim();
+
+      if (!aliasValueTrim || !urlValueTrim) {
+        message.innerText = 'Alias and/or URL are empty';
+        hideSpinner();
+        showAlertContainer('Must provide alias and URL');
+        throw new Error('Alias and/or URL are empty');
+      }
+
+      if (aliasValueTrim.length > 256 || urlValueTrim.length > 700) {
+        showAlertContainer('Alias and/or URL are too long. Alias max length is 256 characters and URL max length is 700 characters');
+        throw new Error('Alias and/or URL are too long');
+      }
+     
+      const response = fetch(domain+'/generate-short-url', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            alias: aliasInput.value,
+            url: urlInput.value
+          })
+      });
+      response.then((res) => {
+        return res.json();
+      }).then(data => {
+        if (data.ok) {
+          console.log(data)
+          console.log('Printing data ...')
+          hideSpinner();
+          showAlertContainer(data.message);
+          urlValue.setAttribute('href', data.url);
+          urlValue.innerHTML = data.url;
+          generateTwitterButton(data.result.shortUrlFull);
+          generateFacebookButton(data.result.shortUrlFull);
+          console.log(data)
+        } else {
+          hideSpinner();
+          console.log(data)
+          showAlertContainer(data.message);
+          clearValues();
+          throw new Error('Something went wrong');
+        }
+      }).catch(err => {
+        hideSpinner();
+        console.log(err)
+        showAlertContainer(err.message);
+        clearValues();
+        throw new Error('Something went wrong');
+      });
+    }
+
+    const addTableRowToTable = (index, data) => {
+      // Create a new table row element
+      const newRow = document.createElement("tr");
+
+      // Create table cells and set their content
+      const cell1 = document.createElement("th");
+      cell1.setAttribute("scope", "row");
+      cell1.textContent = index;
+
+      const cell2 = document.createElement("td");
+      cell2.textContent = data.alias;
+
+      const cell3 = document.createElement("td");
+      cell3.textContent = data.shortUrlFull;
+
+      const cell4 = document.createElement("td");
+      cell4.textContent = data.url;
+     
+      // Append the cells to the row
+      newRow.appendChild(cell1);
+      newRow.appendChild(cell2);
+      newRow.appendChild(cell3);
+      newRow.appendChild(cell4);
+
+      // Append the new row to the table body with the specified ID
+      const tbody = document.getElementById("tbody");
+      if (tbody) {
+        tbody.appendChild(newRow);
+      } else {
+        console.error("Table body with id 'tbody' not found.");
+      }
+    }
+
+    const getMyUrls = (offSet = undefined) => {
+      const tbody = document.getElementById("tbody");
+      tbody.innerHTML = '';
+      showSpinnerTable();
+      const response = fetch(domain+'/my-short-urls', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: offSet ? JSON.stringify({
+            offSet: offSet
+          }) : JSON.stringify({})
+      });
+      response.then((res) => {
+        return res.json();
+      }).then(data => {
+        if (data.ok) {
+          console.log('Printing data ...')
+          hideSpinnerTable();
+          if (data.data.length === 0) {
+            showAlertContainer('No URLs found');
+          } else {
+            data.data.forEach((item, index) => {
+              addTableRowToTable(index+1, item);
+            });
+          }
+        } else {
+          hideSpinnerTable();
+          console.log(data)
+          showAlertContainer(data.message);
+          throw new Error('Something went wrong');
+        }
+      }).catch(err => {
+        hideSpinnerTable();
+        console.log(err)
+        showAlertContainer(err.message);
+        throw new Error('Something went wrong');
+      });
+    }
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.min.js" integrity="sha512-WW8/jxkELe2CAiE4LvQfwm1rajOS8PHasCCx+knHG0gBHt8EXxS6T6tJRTGuDQVnluuAvMxWF4j8SNFDKceLFg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</html>

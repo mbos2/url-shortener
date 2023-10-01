@@ -3,7 +3,7 @@
 This is URL Shortener application ran by [Appwrite cloud function.](https://appwrite.io), on Appwrite platform.  
 This project is part of Appwrites Lightning Hackathon.  
 
-Currently working demo: [On this link](https://6515fbdc6a7b8aa04c45.appwrite.global
+Currently working demo: [On this link](6515fbdc6a7b8aa04c45.appwrite.global
 )
 
 ## About
@@ -96,5 +96,16 @@ Refer to [Package JSON](package.json) file
 - - It will return 100 at the time. if you have more than 100 records, you need to update code to show more.
 - - Allows only POST method
 - - Must have `'Content-Type': 'application/json'` header
+
+- `/delete-record`:
+- - Deletes Short URL record
+- - Allows POST method only
+- - Must have `'Content-Type': 'application/json'` header
+- - Allowed payload example:
+```
+  JSON.stringify({
+    shortUrl: SHORT URL VALUE
+  })
+```
 
 Refer to the [template](functions/url-shortener/dev/ui/index.html) to see how it is used in the simple frontend.

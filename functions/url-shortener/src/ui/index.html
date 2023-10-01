@@ -114,6 +114,7 @@
         <span class="visually-hidden">Loading table...</span>
       </div>
     </div>
+    <div id="table-spinner-message" class="mt-4" style="width: 100%; text-align: center;"></div>
     <div class="divider dark"></div>
     <div class="container-lg table-responsive px-4">
       <table class="table table-light table-hover table-striped mt-4 mb-4">
@@ -123,6 +124,7 @@
             <th scope="col">Alias</th>
             <th scope="col">Short URL</th>
             <th scope="col">Original URL</th>
+            <th scope="col">Delete</th>
           </tr>
         </thead>
         <tbody id="tbody"></tbody>
@@ -174,7 +176,7 @@
       urlValue.setAttribute('href', '');
     }
 
-    const showSpinner = () => {
+    const showSpinner = (message = undefined) => {
       spinner.classList.remove('d-none');
     }
 
@@ -182,12 +184,18 @@
       spinner.classList.add('d-none');
     }
 
-    const showSpinnerTable = () => {
+    const showSpinnerTable = (message = undefined) => {
       spinnerTable.classList.remove('d-none');
+      if (message && typeof message === 'string') {
+        const span = document.getElementById('table-spinner-message');
+        span.innerHTML = message;
+      }
     }
 
     const hideSpinnerTable = () => {
       spinnerTable.classList.add('d-none');
+      const span = document.getElementById('table-spinner-message');
+      span.innerHTML = '';
     }
 
     const showAlertContainer = (message) => {
@@ -257,9 +265,15 @@
       });
     }
 
+    const deleteTableRowFromTable = (id) => {
+      const row = document.getElementById(id);
+      row.remove();
+    }
+
     const addTableRowToTable = (index, data) => {
       // Create a new table row element
       const newRow = document.createElement("tr");
+      newRow.id = data.id;
 
       // Create table cells and set their content
       const cell1 = document.createElement("th");
@@ -274,12 +288,23 @@
 
       const cell4 = document.createElement("td");
       cell4.textContent = data.url;
+      
+      const cell5 = document.createElement("td");
+      const deleteBtn = document.createElement("button");
+      deleteBtn.setAttribute("onclick", `deleteShortUrl('${data.id}')`);
+      deleteBtn.setAttribute("class", "btn btn-outline-dark");
+      deleteBtn.setAttribute("type", "button");
+      const btnIcon = document.createElement('i');
+      btnIcon.setAttribute('class', 'bi bi-x-circle');
+      deleteBtn.appendChild(btnIcon);
+      cell5.appendChild(deleteBtn);
      
       // Append the cells to the row
       newRow.appendChild(cell1);
       newRow.appendChild(cell2);
       newRow.appendChild(cell3);
       newRow.appendChild(cell4);
+      newRow.appendChild(cell5);
 
       // Append the new row to the table body with the specified ID
       const tbody = document.getElementById("tbody");
@@ -312,10 +337,44 @@
           if (data.data.length === 0) {
             showAlertContainer('No URLs found');
           } else {
+            console.log(data)
             data.data.forEach((item, index) => {
               addTableRowToTable(index+1, item);
             });
           }
+        } else {
+          hideSpinnerTable();
+          console.log(data)
+          showAlertContainer(data.message);
+          throw new Error('Something went wrong');
+        }
+      }).catch(err => {
+        hideSpinnerTable();
+        console.log(err)
+        showAlertContainer(err.message);
+        throw new Error('Something went wrong');
+      });
+    }
+
+    const deleteShortUrl = (id) => {
+      const tbody = document.getElementById("tbody");
+      showSpinnerTable('Deleting record . . .');
+      const response = fetch(domain+'/delete-record', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            id: id
+          })
+      });
+      response.then((res) => {
+        return res.json();
+      }).then(data => {
+        if (data.ok) {
+          console.log('Printing data ...')
+          hideSpinnerTable();
+          deleteTableRowFromTable(id);
         } else {
           hideSpinnerTable();
           console.log(data)

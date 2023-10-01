@@ -5,7 +5,10 @@ import { IAppwriteRequestData } from './common/types.js';
 import config from './common/config.js';
 import { generateBackendResources } from './common/backend-resources-utils.js';
 import { containsShortUrlInPath, getShortUrls, getStaticFile, getUrlAndRedirect } from './common/get-utils.js';
-import { createShortUrlRecord } from './common/post-utils.js';
+import {
+  createShortUrlRecord,
+  deleteShortUrlRecord,
+} from './common/post-utils.js';
 
 export default async ({ req, res, log, error }: { req: IAppwriteRequestData; res: any; log: any; error: any }) => {
   log(req)
@@ -129,9 +132,53 @@ export default async ({ req, res, log, error }: { req: IAppwriteRequestData; res
     const result = await createShortUrlRecord(databases, originalUrl, alias, log, error);
     return res.json(result);
   }
+  
+  if (req.method === 'POST' && req.path === '/delete-record') {
+    if (req.headers['content-type'] !== 'application/json') {
+      error('Invalid Header. Content-Type must be application/json.');
+      return res.json(
+        {
+          ok: false,
+          message: `Invalid Header. Content-Type must be application/json.`,
+        },
+        400
+      );
+    }
+    if (!req.body) {
+      error('No body was found.');
+      return res.json({ ok: false, message: `No body was found.` }, 400);
+    }
+    // const payload = JSON.parse(req.body);
+    // const payload = req.body;
+    const payload = JSON.parse(req.bodyRaw);
+    if (!payload) {
+      error('No payload was found.');
+      return res.json({ ok: false, message: `No payload was found.` }, 400);
+    }
+    log('Payload: ');
+    log(payload);
+
+    if (!payload.id) {
+      error('No id was found in the payload.');
+      return res.json(
+        { ok: false, message: `No id was found in the payload.` },
+        400
+      );
+    }
+
+    const id = payload.id;
+    log('Goint into deleteShortUrlRecord');
+    const result = await deleteShortUrlRecord(
+      databases,
+      id,      
+      log,
+      error
+    );
+    return res.json(result);
+  }
 
   // Return HTML
-  
+
   return res.send(getStaticFile('index.html'), 200, {
     'Content-Type': 'text/html; charset=utf-8',
   });

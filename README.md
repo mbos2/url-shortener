@@ -104,7 +104,7 @@ Refer to [Package JSON](package.json) file
 - - Allowed payload example:
 ```
   JSON.stringify({
-    shortUrl: SHORT URL VALUE
+    id: Document ID from item
   })
 ```
 

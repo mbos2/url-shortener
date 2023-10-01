@@ -4,6 +4,20 @@ import { customAlphabet } from 'nanoid';
 const ALPHABET = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 const nanoid = customAlphabet(ALPHABET);
 const generateShortCode = () => nanoid(6);
+const getShortCodeDatabaseRecord = async (databases, log, shortUrl) => {
+    log(`Short code is ${shortUrl}`);
+    log('Starting to list documents to search for short code');
+    return await databases.listDocuments(
+      config.databaseId,
+      config.collectionId,
+      [
+        Query.select(['shortUrl']),
+        Query.offset(0),
+        Query.limit(1),
+        Query.equal('shortUrl', shortUrl),
+      ]
+    );
+}
 const getNewShortCode = async (databases, log) => {
     log('Checking if short code exists in the database. . .');
     let retries = 0;
@@ -12,14 +26,7 @@ const getNewShortCode = async (databases, log) => {
         log(`Retries: ${retries}`);
         log('Starting to execute generateShortCode()');
         const shortCode = generateShortCode();
-        log(`Short code is ${shortCode}`);
-        log('Starting to list documents to search for short code');
-        const result = await databases.listDocuments(config.databaseId, config.collectionId, [
-            Query.select(['shortUrl']),
-            Query.offset(0),
-            Query.limit(1),
-            Query.equal("shortUrl", shortCode)
-        ]);
+        const result = await getShortCodeDatabaseRecord(databases, log, shortCode);
         log('Finished listing documents, checking result . . .');
         log(`Result is: ${result}`);
         if (!(result && result.documents.length > 0)) {
@@ -81,4 +88,60 @@ export const createShortUrlRecord = async (databases, originalUrl, alias, log, e
             message: `Failed to create short url.`
         };
     }
+};
+
+export const deleteShortUrlRecord = async (
+  databases,
+  maybeFullShortUrl,
+  log,
+  error
+) => {
+  try {
+    const domain = process.env.DOMAIN;
+    log(`deleting short url record for ${maybeFullShortUrl}`);
+    const shortUrl = maybeFullShortUrl.replace(`${domain}/`, '');
+    log('Fetching existing document . . .');
+    const existingRecords = await getShortCodeDatabaseRecord(databases, log, shortUrl);
+    if (existingRecords && existingRecords.documents.length > 0) {
+        log('Existing records found');
+        const documentToDelete = existingRecords.documents[0];
+        log('Deleting record with id: ${documentToDelete.id}');
+        const result = await databases.deleteDocument(config.databaseId, config.collectionId, documentToDelete.id);
+        if (result) {
+          log('Result is: ');
+          log(result);
+          return {
+            statusCode: 200,
+            ok: true,
+            message: `Successfully deleted short url.`,
+            url: `${domain}/${shortUrl}`,
+            result: result,
+          };
+        } else {
+          log('Result is (in !result): ');
+          log(result);
+          return {
+            statusCode: 500,
+            ok: false,
+            message: `Failed to delete short url.`,
+          };
+        }
+    } else {
+        log('No existing records found for ${shortUrl}');
+        return {
+            statusCode: 404,
+            ok: false,
+            message: `No existing records found.`,
+        };
+    }
+  } catch (err) {
+    log('In createShortUrlRecord catch');
+    log(err);
+    error(err);
+    return {
+      statusCode: 500,
+      ok: false,
+      message: `Failed to create short url.`,
+    };
+  }
 };

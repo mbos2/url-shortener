@@ -40,6 +40,7 @@ export const generateShortUrlDatabaseCollection = async (databases, error) => {
 export const generateShortUrlDatabaseCollectionAttributes = async (databases, error) => {
     try {
         const promises = [
+            databases.createStringAttribute(config.databaseId, config.collectionId, 'id', 100, true),
             databases.createStringAttribute(config.databaseId, config.collectionId, 'url', 700, true),
             databases.createStringAttribute(config.databaseId, config.collectionId, 'shortUrl', 60, true),
             databases.createStringAttribute(config.databaseId, config.collectionId, 'shortUrlFull', 256, true),

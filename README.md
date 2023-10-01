@@ -1,4 +1,4 @@
-# URL Shortenrt
+# URL Shortener
 
 This is URL Shortener application ran by [Appwrite cloud function.](https://appwrite.io), on Appwrite platform.  
 This project is part of Appwrites Lightning Hackathon.  

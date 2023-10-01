@@ -30,6 +30,7 @@ export interface IResultObject {
 }
 
 export interface IShortUrl {
+  id: string;
   url: string;
   shortUrl: string;
   shortUrlFull: string;

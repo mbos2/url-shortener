@@ -1,0 +1,21 @@
+name: Bug Report
+description: File a bug report
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+  - type: textarea
+    id: What bug have you encountered?
+    attributes:
+      label: What bug have you encountered? 
+      placeholder: Please describe what has happened as detailed as possible.
+    validations:
+      required: true
+  - type: markdown
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our [Code of Conduct](CODE_OF_CONDUCT.md).

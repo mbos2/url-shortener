@@ -9,7 +9,7 @@ const nanoid = customAlphabet(ALPHABET);
 const generateShortCode = () => nanoid(6);
 const generateShortId = () => nanoid(16); 
 
-const getShortUrlsFromDatabase = async (databases: Databases, log: any, shortUrl: string) => {
+const getShortUrlsFromDatabase = async (databases: Databases, shortUrl: string) => {
   c.log('In getShortUrlsFromDatabase -> testing logger')
   try {
     c.log(`Short code is ${shortUrl}`);
@@ -36,7 +36,7 @@ const getShortUrlsFromDatabase = async (databases: Databases, log: any, shortUrl
     }
   }
 }
-const getNewShortCode = async (databases: Databases, log: any) => {
+const getNewShortCode = async (databases: Databases) => {
   c.log('Checking if short code exists in the database. . .')
   let retries = 0;
   const maxRetries = 3;
@@ -44,7 +44,7 @@ const getNewShortCode = async (databases: Databases, log: any) => {
     c.log(`Retries: ${retries}`)
     c.log('Starting to execute generateShortCode()')
     const shortCode = generateShortCode();
-    const result = await getShortUrlsFromDatabase(databases, log, shortCode);
+    const result = await getShortUrlsFromDatabase(databases, shortCode);
 
     c.log('Finished listing documents, checking result . . .')
     c.log(`Result is: ${result}`)
@@ -58,10 +58,10 @@ const getNewShortCode = async (databases: Databases, log: any) => {
   throw new c.error("Couldn't generate shortUrl. Please try again.");
 }
 
-export const createShortUrlRecord = async (databases: Databases, originalUrl: string, alias: string, log: any, error: any) => { 
+export const createShortUrlRecord = async (databases: Databases, originalUrl: string, alias: string) => { 
   try {
     c.log(`Creating short url record for ${originalUrl}`  )
-    const shortUrl = await getNewShortCode(databases, log);
+    const shortUrl = await getNewShortCode(databases);
     const domain = process.env.DOMAIN as string;
     c.log(`Short url is ${shortUrl}`)
     c.log(`Domain is ${domain}`)
@@ -114,8 +114,6 @@ export const createShortUrlRecord = async (databases: Databases, originalUrl: st
 export const deleteShortUrlRecord = async (
   databases: Databases,
   id: string,
-  log: any,
-  error: any
 ) => {
   try {
       c.log('Starting to delete document');

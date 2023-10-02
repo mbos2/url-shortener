@@ -43,7 +43,7 @@ export default async ({ req, res, log, error }: { req: IAppwriteRequestData; res
     else c.log("Database not found.");
   } catch (err) {
    c.log("Database not found . . . Creating a database . . .");
-   const result = await generateBackendResources(databases, error, res);  
+   const result = await generateBackendResources(databases, res);  
    c.log('generateBackendResources result -> . . .')
    c.log(result)
    if (result.ok) {
@@ -66,7 +66,7 @@ export default async ({ req, res, log, error }: { req: IAppwriteRequestData; res
   if (req.method === 'GET' && isShortUrlPresent) {
     c.log('Short URL Is Present')
     c.log('Ececuting getUrlAndRedirect')
-    return await getUrlAndRedirect(databases, req, res, log, error);
+    return await getUrlAndRedirect(databases, req, res);
   } else {
     c.log('Short URL Is Not Present . . . Continuing . . .')
   }
@@ -131,7 +131,7 @@ export default async ({ req, res, log, error }: { req: IAppwriteRequestData; res
     const originalUrl = payload.url;
     const alias = payload.alias;
     c.log("Goint into createShortUrlRecord")
-    const result = await createShortUrlRecord(databases, originalUrl, alias, log, error);
+    const result = await createShortUrlRecord(databases, originalUrl, alias);
     return res.json(result);
   }
   
@@ -172,9 +172,7 @@ export default async ({ req, res, log, error }: { req: IAppwriteRequestData; res
     c.log('Goint into deleteShortUrlRecord');
     const result = await deleteShortUrlRecord(
       databases,
-      id,      
-      log,
-      error
+      id,
     );
     return res.json(result);
   }

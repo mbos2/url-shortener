@@ -1,6 +1,7 @@
 import { Databases, ID, Query } from "node-appwrite";
 import config from "./config.js";
 import { customAlphabet } from 'nanoid';
+import { c } from "./logger.js";
 
 const ALPHABET =
   '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -9,9 +10,10 @@ const generateShortCode = () => nanoid(6);
 const generateShortId = () => nanoid(16); 
 
 const getShortUrlsFromDatabase = async (databases: Databases, log: any, shortUrl: string) => {
+  c.log('In getShortUrlsFromDatabase -> testing logger')
   try {
-    log(`Short code is ${shortUrl}`);
-    log('Starting to list documents to search for short code');
+    c.log(`Short code is ${shortUrl}`);
+    c.log('Starting to list documents to search for short code');
     const result = await databases.listDocuments(config.databaseId, config.collectionId, [
       Query.select(['*']),
       Query.offset(0),
@@ -25,8 +27,8 @@ const getShortUrlsFromDatabase = async (databases: Databases, log: any, shortUrl
       documents: result.documents
     }
   } catch (error) {
-    log('In getShortUrlsFromDatabase catch');
-    log(error);
+    c.log('In getShortUrlsFromDatabase catch');
+    c.log(error);
     return {
       ok: false,
       statusCode: 500,
@@ -35,35 +37,35 @@ const getShortUrlsFromDatabase = async (databases: Databases, log: any, shortUrl
   }
 }
 const getNewShortCode = async (databases: Databases, log: any) => {
-  log('Checking if short code exists in the database. . .')
+  c.log('Checking if short code exists in the database. . .')
   let retries = 0;
   const maxRetries = 3;
   while (retries < maxRetries) {
-    log(`Retries: ${retries}`)
-    log('Starting to execute generateShortCode()')
+    c.log(`Retries: ${retries}`)
+    c.log('Starting to execute generateShortCode()')
     const shortCode = generateShortCode();
     const result = await getShortUrlsFromDatabase(databases, log, shortCode);
 
-    log('Finished listing documents, checking result . . .')
-    log(`Result is: ${result}`)
+    c.log('Finished listing documents, checking result . . .')
+    c.log(`Result is: ${result}`)
     if (!(result.documents && result.documents.length > 0)) {
       return shortCode;
     }
     retries++;
   }
-  log('getNewShortCode -> Retries exceeded max retries')
-  log('Couldn not generate shortUrl. Please try again.')
-  throw new Error("Couldn't generate shortUrl. Please try again.");
+  c.log('getNewShortCode -> Retries exceeded max retries')
+  c.log('Couldn not generate shortUrl. Please try again.')
+  throw new c.error("Couldn't generate shortUrl. Please try again.");
 }
 
 export const createShortUrlRecord = async (databases: Databases, originalUrl: string, alias: string, log: any, error: any) => { 
   try {
-    log(`Creating short url record for ${originalUrl}`  )
+    c.log(`Creating short url record for ${originalUrl}`  )
     const shortUrl = await getNewShortCode(databases, log);
     const domain = process.env.DOMAIN as string;
-    log(`Short url is ${shortUrl}`)
-    log(`Domain is ${domain}`)
-    log('Starting to create document')
+    c.log(`Short url is ${shortUrl}`)
+    c.log(`Domain is ${domain}`)
+    c.log('Starting to create document')
     const id = generateShortId();
     const data = {
       "id": id,
@@ -73,13 +75,13 @@ export const createShortUrlRecord = async (databases: Databases, originalUrl: st
       "alias": alias,
       "createdAt": Date.now()
     }
-    log(`Data is: ${data}`)
+    c.log(`Data is: ${data}`)
     const result = await databases.createDocument(config.databaseId, config.collectionId, id, data);
-    log('Finished creating document, checking result . . .')
+    c.log('Finished creating document, checking result . . .')
     if (result) {
-      log('In result')
-      log('Result is: ')
-      log(result)
+      c.log('In result')
+      c.log('Result is: ')
+      c.log(result)
       return {
         statusCode: 200,
         ok: true,
@@ -88,8 +90,8 @@ export const createShortUrlRecord = async (databases: Databases, originalUrl: st
         result: result
       }
     } else {
-      log('Result is (in !result): ')
-      log(result)
+      c.log('Result is (in !result): ')
+      c.log(result)
       return {
         statusCode: 500,
         ok: false,
@@ -97,9 +99,9 @@ export const createShortUrlRecord = async (databases: Databases, originalUrl: st
       }
     }
   } catch (err) {
-    log('In createShortUrlRecord catch')
-    log(err)
-    error(err)
+    c.log('In createShortUrlRecord catch')
+    c.log(err)
+    c.error(err)
     return {
       statusCode: 500,
       ok: false,
@@ -116,10 +118,10 @@ export const deleteShortUrlRecord = async (
   error: any
 ) => {
   try {
-      log('Starting to delete document');
-      log(`Document id is ${id}`)
+      c.log('Starting to delete document');
+      c.log(`Document id is ${id}`)
       const result = await databases.deleteDocument(config.databaseId, config.collectionId, id);
-      log('Finished deleting document, checking result . . .')
+      c.log('Finished deleting document, checking result . . .')
       return {
         statusCode: 200,
         ok: true,
@@ -127,9 +129,9 @@ export const deleteShortUrlRecord = async (
         result: result,
       };
     } catch (err) {
-    log('In deleteShortUrlRecord catch');
-    log(err);
-    error(err);
+    c.log('In deleteShortUrlRecord catch');
+    c.log(err);
+    c.error(err);
     return {
       statusCode: 500,
       ok: false,

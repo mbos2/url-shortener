@@ -1,4 +1,5 @@
 import config from "./config.js";
+import { c } from './logger.js';
 export const generateShortUrlDatabase = async (databases, error) => {
     try {
         await databases.create(config.databaseId, 'Short URL Database');
@@ -9,8 +10,8 @@ export const generateShortUrlDatabase = async (databases, error) => {
         };
     }
     catch (err) {
-        error(`Failed to generate Short URL collection.`);
-        error(err);
+        c.error(`Failed to generate Short URL collection.`);
+        c.error(err);
         return {
             statusCode: 500,
             ok: true,
@@ -28,8 +29,8 @@ export const generateShortUrlDatabaseCollection = async (databases, error) => {
         };
     }
     catch (err) {
-        error(`Failed to generate Short URL collection.`);
-        error(err);
+        c.error(`Failed to generate Short URL collection.`);
+        c.error(err);
         return {
             statusCode: 500,
             ok: true,
@@ -55,8 +56,8 @@ export const generateShortUrlDatabaseCollectionAttributes = async (databases, er
         };
     }
     catch (err) {
-        error(`Failed to generate Short URL collection.`);
-        error(err);
+        c.error(`Failed to generate Short URL collection.`);
+        c.error(err);
         return {
             statusCode: 500,
             ok: true,
@@ -72,7 +73,7 @@ export const generateBackendResources = async (databases, error, res) => {
         }
     }
     catch (err) {
-        error(`Failed to generate Short URL database.`);
+        c.error(`Failed to generate Short URL database.`);
         return {
             statusCode: 500,
             ok: true,
@@ -86,7 +87,7 @@ export const generateBackendResources = async (databases, error, res) => {
         }
     }
     catch (err) {
-        error(`Failed to generate Short URL collection.`);
+        c.error(`Failed to generate Short URL collection.`);
         return {
             statusCode: 500,
             ok: true,
@@ -100,7 +101,7 @@ export const generateBackendResources = async (databases, error, res) => {
         }
     }
     catch (err) {
-        error(`Failed to generate Short URL collection attributes.`);
+        c.error(`Failed to generate Short URL collection attributes.`);
         return {
             statusCode: 500,
             ok: true,

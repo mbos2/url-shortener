@@ -3,7 +3,7 @@
 This is URL Shortener application ran by [Appwrite cloud function.](https://appwrite.io), on Appwrite platform.  
 This project is part of Appwrites Lightning Hackathon.  
 
-Currently working demo: [On this link](6515fbdc6a7b8aa04c45.appwrite.global
+Currently working demo: [On this link](https://6515fbdc6a7b8aa04c45.appwrite.global
 )
 
 ## About

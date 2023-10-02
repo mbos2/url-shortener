@@ -211,6 +211,7 @@
 
     const generateUrl = async () => {
       clearValues();
+      hideAlertContainer();
       showSpinner();
       const aliasValueTrim = aliasInput.value.trim();
       const urlValueTrim = urlInput.value.trim();
@@ -269,6 +270,7 @@
     const deleteTableRowFromTable = (id) => {
       const row = document.getElementById(id);
       row.remove();
+      showAlertContainer('Record deleted successfully');
     }
 
     const addTableRowToTable = (index, data) => {
@@ -317,6 +319,7 @@
     }
 
     const getMyUrls = (offSet = undefined) => {
+      hideAlertContainer();
       const tbody = document.getElementById("tbody");
       tbody.innerHTML = '';
       showSpinnerTable();
@@ -358,6 +361,7 @@
     }
 
     const deleteShortUrl = (id) => {
+      hideAlertContainer();
       const tbody = document.getElementById("tbody");
       showSpinnerTable('Deleting record . . .');
       const response = fetch(domain+'/delete-record', {

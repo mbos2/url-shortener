@@ -3,8 +3,9 @@ import config from './config.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
-export const getShortUrls = async (databases, log, error, offsetNumber) => {
-    log('Getting short urls. . .');
+import { c } from './logger.js';
+export const getShortUrls = async (databases, offsetNumber) => {
+    c.log('Getting short urls. . .');
     try {
         const result = await databases.listDocuments(config.databaseId, config.collectionId, [
             Query.select(['*']),
@@ -12,9 +13,9 @@ export const getShortUrls = async (databases, log, error, offsetNumber) => {
             Query.limit(100),
             offsetNumber ? Query.offset(offsetNumber) : Query.offset(0)
         ]);
-        log('Checking if result exists. . .');
+        c.log('Checking if result exists. . .');
         if (result) {
-            log('Results exists. . .');
+            c.log('Results exists. . .');
             return {
                 statusCode: 200,
                 ok: true,
@@ -23,7 +24,7 @@ export const getShortUrls = async (databases, log, error, offsetNumber) => {
             };
         }
         else {
-            log('Result does not exist.');
+            c.log('Result does not exist.');
             return {
                 statusCode: 500,
                 ok: false,
@@ -32,7 +33,7 @@ export const getShortUrls = async (databases, log, error, offsetNumber) => {
         }
     }
     catch (error) {
-        log(error);
+        c.log(error);
         return {
             statusCode: 500,
             ok: false,
@@ -50,11 +51,11 @@ export const containsShortUrlInPath = (url) => {
     const parts = url.split('/');
     return parts.length > 0 && parts[1].length >= 6 && parts[1] !== '/favicon.ico' && parts[1] !== 'favicon.ico'; // Check for a non-empty part after the first '/' with a length of at least 6 characters.
 };
-export const getUrlAndRedirect = async (databases, req, res, log, error) => {
-    log('Extracting short url . . .');
+export const getUrlAndRedirect = async (databases, req, res) => {
+    c.log('Extracting short url . . .');
     const shortUrl = extractShortUrlFromPath(req.path);
     if (!shortUrl) {
-        log('No short url was found.');
+        c.log('No short url was found.');
         return res.json({
             statusCode: 400,
             ok: false,
@@ -62,27 +63,27 @@ export const getUrlAndRedirect = async (databases, req, res, log, error) => {
         });
     }
     try {
-        log('Getting short url document. . .');
+        c.log('Getting short url document. . .');
         const result = await databases.listDocuments(config.databaseId, config.collectionId, [
             Query.select(['*']),
             Query.offset(0),
             Query.limit(1),
             Query.equal("shortUrl", [shortUrl])
         ]);
-        log(`Checking if short url document exists (${shortUrl}). . .`);
+        c.log(`Checking if short url document exists (${shortUrl}). . .`);
         if (result && result.documents.length > 0) {
-            log('Short url document exists. Getting document in a variable . . .');
+            c.log('Short url document exists. Getting document in a variable . . .');
             const document = result.documents[0];
-            log('Checking if document.url exists . . .');
-            console.log(document);
+            c.log('Checking if document.url exists . . .');
+            c.log(document);
             if (document.url) {
-                log('Redirecting to original url . . .');
+                c.log('Redirecting to original url . . .');
                 return res.redirect(new URL(document.url), 301, {
                     'Cache-Control': 'no-cache, no-store, must-revalidate'
                 });
             }
             else {
-                log('Document.url does not exist.');
+                c.log('Document.url does not exist.');
                 return {
                     statusCode: 500,
                     ok: false,
@@ -91,7 +92,7 @@ export const getUrlAndRedirect = async (databases, req, res, log, error) => {
             }
         }
         else {
-            log('Short url document does not exist.');
+            c.log('Short url document does not exist.');
             return {
                 statusCode: 500,
                 ok: false,
@@ -100,7 +101,7 @@ export const getUrlAndRedirect = async (databases, req, res, log, error) => {
         }
     }
     catch (err) {
-        log(err);
+        c.log(err);
         return {
             statusCode: 500,
             ok: false,

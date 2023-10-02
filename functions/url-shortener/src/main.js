@@ -36,7 +36,7 @@ export default async ({ req, res, log, error }) => {
     }
     catch (err) {
         c.log("Database not found . . . Creating a database . . .");
-        const result = await generateBackendResources(databases, error, res);
+        const result = await generateBackendResources(databases, res);
         c.log('generateBackendResources result -> . . .');
         c.log(result);
         if (result.ok) {
@@ -57,7 +57,7 @@ export default async ({ req, res, log, error }) => {
     if (req.method === 'GET' && isShortUrlPresent) {
         c.log('Short URL Is Present');
         c.log('Ececuting getUrlAndRedirect');
-        return await getUrlAndRedirect(databases, req, res, log, error);
+        return await getUrlAndRedirect(databases, req, res);
     }
     else {
         c.log('Short URL Is Not Present . . . Continuing . . .');
@@ -121,7 +121,7 @@ export default async ({ req, res, log, error }) => {
         const originalUrl = payload.url;
         const alias = payload.alias;
         c.log("Goint into createShortUrlRecord");
-        const result = await createShortUrlRecord(databases, originalUrl, alias, log, error);
+        const result = await createShortUrlRecord(databases, originalUrl, alias);
         return res.json(result);
     }
     if (req.method === 'POST' && req.path === '/delete-record') {
@@ -151,7 +151,7 @@ export default async ({ req, res, log, error }) => {
         }
         const id = payload.id;
         c.log('Goint into deleteShortUrlRecord');
-        const result = await deleteShortUrlRecord(databases, id, log, error);
+        const result = await deleteShortUrlRecord(databases, id);
         return res.json(result);
     }
     const logs = [];

@@ -51,7 +51,7 @@ export const containsShortUrlInPath = (url) => {
     const parts = url.split('/');
     return parts.length > 0 && parts[1].length >= 6 && parts[1] !== '/favicon.ico' && parts[1] !== 'favicon.ico'; // Check for a non-empty part after the first '/' with a length of at least 6 characters.
 };
-export const getUrlAndRedirect = async (databases, req, res, log, error) => {
+export const getUrlAndRedirect = async (databases, req, res) => {
     c.log('Extracting short url . . .');
     const shortUrl = extractShortUrlFromPath(req.path);
     if (!shortUrl) {

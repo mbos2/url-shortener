@@ -1,6 +1,6 @@
 import config from "./config.js";
 import { c } from './logger.js';
-export const generateShortUrlDatabase = async (databases, error) => {
+export const generateShortUrlDatabase = async (databases) => {
     try {
         await databases.create(config.databaseId, 'Short URL Database');
         return {
@@ -19,7 +19,7 @@ export const generateShortUrlDatabase = async (databases, error) => {
         };
     }
 };
-export const generateShortUrlDatabaseCollection = async (databases, error) => {
+export const generateShortUrlDatabaseCollection = async (databases) => {
     try {
         await databases.createCollection(config.databaseId, config.collectionId, 'Short URL Collection');
         return {
@@ -38,7 +38,7 @@ export const generateShortUrlDatabaseCollection = async (databases, error) => {
         };
     }
 };
-export const generateShortUrlDatabaseCollectionAttributes = async (databases, error) => {
+export const generateShortUrlDatabaseCollectionAttributes = async (databases) => {
     try {
         const promises = [
             databases.createStringAttribute(config.databaseId, config.collectionId, 'id', 100, true),
@@ -65,9 +65,9 @@ export const generateShortUrlDatabaseCollectionAttributes = async (databases, er
         };
     }
 };
-export const generateBackendResources = async (databases, error, res) => {
+export const generateBackendResources = async (databases, res) => {
     try {
-        const resultDb = await generateShortUrlDatabase(databases, error);
+        const resultDb = await generateShortUrlDatabase(databases);
         if (resultDb.ok) {
             res.json(resultDb);
         }
@@ -81,7 +81,7 @@ export const generateBackendResources = async (databases, error, res) => {
         };
     }
     try {
-        const resultColl = await generateShortUrlDatabaseCollection(databases, error);
+        const resultColl = await generateShortUrlDatabaseCollection(databases);
         if (resultColl.ok) {
             res.json(resultColl);
         }
@@ -95,7 +95,7 @@ export const generateBackendResources = async (databases, error, res) => {
         };
     }
     try {
-        const resultAttr = await generateShortUrlDatabaseCollectionAttributes(databases, error);
+        const resultAttr = await generateShortUrlDatabaseCollectionAttributes(databases);
         if (resultAttr.ok) {
             res.json(resultAttr);
         }

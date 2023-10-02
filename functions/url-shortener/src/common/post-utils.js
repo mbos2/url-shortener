@@ -4,20 +4,24 @@ import { customAlphabet } from 'nanoid';
 const ALPHABET = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 const nanoid = customAlphabet(ALPHABET);
 const generateShortCode = () => nanoid(6);
-const getShortCodeDatabaseRecord = async (databases, log, shortUrl) => {
+const getShortUrlsFromDatabase = async (databases, log, shortUrl) => {
     log(`Short code is ${shortUrl}`);
     log('Starting to list documents to search for short code');
-    return await databases.listDocuments(
-      config.databaseId,
-      config.collectionId,
-      [
+    return await databases.listDocuments(config.databaseId, config.collectionId, [
         Query.select(['shortUrl']),
         Query.offset(0),
         Query.limit(1),
-        Query.equal('shortUrl', shortUrl),
-      ]
-    );
-}
+        Query.equal('shortUrl', shortUrl)
+    ]);
+};
+const getUrlsByAliasFromDatabase = async (databases, log, alias) => {
+    log('Starting to list documents by alias');
+    return await databases.listDocuments(config.databaseId, config.collectionId, [
+        Query.offset(0),
+        Query.equal('alias', alias),
+        Query.select(['url', 'shortUrl', 'shortUrlFull', 'alias', 'createdAt'])
+    ]);
+};
 const getNewShortCode = async (databases, log) => {
     log('Checking if short code exists in the database. . .');
     let retries = 0;
@@ -26,7 +30,7 @@ const getNewShortCode = async (databases, log) => {
         log(`Retries: ${retries}`);
         log('Starting to execute generateShortCode()');
         const shortCode = generateShortCode();
-        const result = await getShortCodeDatabaseRecord(databases, log, shortCode);
+        const result = await getShortUrlsFromDatabase(databases, log, shortCode);
         log('Finished listing documents, checking result . . .');
         log(`Result is: ${result}`);
         if (!(result && result.documents.length > 0)) {
@@ -89,59 +93,93 @@ export const createShortUrlRecord = async (databases, originalUrl, alias, log, e
         };
     }
 };
-
-export const deleteShortUrlRecord = async (
-  databases,
-  maybeFullShortUrl,
-  log,
-  error
-) => {
-  try {
-    const domain = process.env.DOMAIN;
-    log(`deleting short url record for ${maybeFullShortUrl}`);
-    const shortUrl = maybeFullShortUrl.replace(`${domain}/`, '');
-    log('Fetching existing document . . .');
-    const existingRecords = await getShortCodeDatabaseRecord(databases, log, shortUrl);
-    if (existingRecords && existingRecords.documents.length > 0) {
-        log('Existing records found');
-        const documentToDelete = existingRecords.documents[0];
-        log('Deleting record with id: ${documentToDelete.id}');
-        const result = await databases.deleteDocument(config.databaseId, config.collectionId, documentToDelete.id);
-        if (result) {
-          log('Result is: ');
-          log(result);
-          return {
-            statusCode: 200,
-            ok: true,
-            message: `Successfully deleted short url.`,
-            url: `${domain}/${shortUrl}`,
-            result: result,
-          };
-        } else {
-          log('Result is (in !result): ');
-          log(result);
-          return {
+export const deleteShortUrlRecord = async (databases, maybeFullShortUrl, log, error) => {
+    try {
+        log(`Deleting short url record for ${maybeFullShortUrl}`);
+        const domain = process.env.DOMAIN;
+        const shortUrl = maybeFullShortUrl.replace(`${domain}/`, '');
+        const existingRecord = await getShortUrlsFromDatabase(databases, log, shortUrl);
+        log('Finished fetching existing short url from database, checking result . . .');
+        if (existingRecord && existingRecord.documents.length > 0) {
+            log('Existing record was found for ${shortUrl}.');
+            log('Starting to delete document');
+            const result = await databases.deleteDocument(config.databaseId, config.collectionId, existingRecord.documents[0].$id);
+            if (result) {
+                log('In result');
+                log('Result is: ');
+                log(result);
+                return {
+                    statusCode: 200,
+                    ok: true,
+                    message: `Successfully deleted short url ${maybeFullShortUrl}.`,
+                    result: result,
+                };
+            }
+            else {
+                log('Result is (in !result): ');
+                log(result);
+                return {
+                    statusCode: 500,
+                    ok: false,
+                    message: `Failed to delete short url ${shortUrl}.`,
+                };
+            }
+        }
+        else {
+            log('No existing record was found for ${shortUrl}.');
+            return {
+                statusCode: 400,
+                ok: false,
+                message: `No existing record was found.`,
+            };
+        }
+    }
+    catch (err) {
+        log('In deleteShortUrlRecord catch');
+        log(err);
+        error(err);
+        return {
             statusCode: 500,
             ok: false,
             message: `Failed to delete short url.`,
-          };
-        }
-    } else {
-        log('No existing records found for ${shortUrl}');
-        return {
-            statusCode: 404,
-            ok: false,
-            message: `No existing records found.`,
         };
     }
-  } catch (err) {
-    log('In createShortUrlRecord catch');
-    log(err);
-    error(err);
-    return {
-      statusCode: 500,
-      ok: false,
-      message: `Failed to create short url.`,
-    };
-  }
+};
+export const getUrlsByAlias = async (databases, alias, log, error) => {
+    try {
+        log(`Searching records by Alias: ${alias}`);
+        const existingRecords = await getUrlsByAliasFromDatabase(databases, log, alias);
+        log('Finished fetching existing records from database by alias, checking result . . .');
+        if (existingRecords && existingRecords.documents.length > 0) {
+            log('In existing records');
+            log('Result is: ');
+            log(existingRecords);
+            return {
+                statusCode: 200,
+                ok: true,
+                message: `Found ${existingRecords.documents.length} records.`,
+                result: existingRecords.documents,
+            };
+        }
+        else {
+            log('No records found. Result: ');
+            log(existingRecords);
+            return {
+                statusCode: 404,
+                ok: false,
+                message: `Did not found any URLs by alias ${alias}.`,
+                result: []
+            };
+        }
+    }
+    catch (err) {
+        log('In deleteShortUrlRecord catch');
+        log(err);
+        error(err);
+        return {
+            statusCode: 500,
+            ok: false,
+            message: `Failed to delete short url.`,
+        };
+    }
 };

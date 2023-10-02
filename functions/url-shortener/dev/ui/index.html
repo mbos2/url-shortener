@@ -107,7 +107,12 @@
   <div class="container-bottom mt-4">
     <h1 class="text-center mt-4 mb-4">Your URLs</h1>
     <div class="d-flex align-items-center justify-content-center">
-      <button onclick="getMyUrls(0)" class="btn btn-outline-dark" type="button" id="button-addon2">Load My URLS</button>
+      <button onclick="getMyUrls(0)" class="btn btn-outline-dark" type="button" id="button-addon2">Load All My URLS</button>
+    </div>
+    <div class="divider dark"></div>
+    <div class="d-flex align-items-center justify-content-center">
+      <input required id="alias_search_term" type="text" placeholder="URL Alias Search Term" aria-label="RL Alias Search Term" aria-describedby="button-addon2">
+      <button onclick="searchUrl()" class="btn btn-outline-dark" type="button" id="button-addon2">Search</button>
     </div>
     <div class="mt-4 mb-4 d-flex w-full align-items-center justify-content-center">
       <div id="spinner-table" class="spinner-border text-dark d-none" role="status">
@@ -140,6 +145,7 @@
     const messageContainer = document.querySelector('#message');
     const socialMediaContainer = document.querySelector('#social-media-buttons');
     const urlValue = document.querySelector('#url-value');
+    const aliasSearchInput = document.querySelector('#alias_search_term');
 
     const generateTwitterButton = (url) => {
       console.log(url)
@@ -328,6 +334,62 @@
           hideSpinnerTable();
           console.log(data)
           showAlertContainer(data.message);
+          throw new Error('Something went wrong');
+        }
+      }).catch(err => {
+        hideSpinnerTable();
+        console.log(err)
+        showAlertContainer(err.message);
+        throw new Error('Something went wrong');
+      });
+    }
+
+    const searchUrl = () => {
+      clearValues();
+      showSpinner();
+      const aliasSearchValueTrim = aliasSearchInput.value.trim();
+
+      if (!aliasSearchValueTrim) {
+        message.innerText = 'Alias search term is empty';
+        hideSpinner();
+        showAlertContainer('Must provide alias search term');
+        throw new Error('Alias search term is empty');
+      }
+
+      if (aliasSearchValueTrim.length > 256) {
+        showAlertContainer('Alias search term is long. Alias search term max length is 256 characters');
+        throw new Error('Alias search term is too long');
+      }
+
+      const tbody = document.getElementById("tbody");
+      tbody.innerHTML = '';
+      showSpinnerTable();
+      const response = fetch(domain+'/search', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            alias: aliasSearchValueTrim
+          })
+      });
+      response.then((res) => {
+        return res.json();
+      }).then(res => {
+        if (res.ok) {
+          console.log('Printing data ...')
+          hideSpinnerTable();
+          if (res.result.length === 0) {
+            showAlertContainer('No URLs found');
+          } else {
+            res.result.forEach((item, index) => {
+              addTableRowToTable(index+1, item);
+            });
+          }
+        } else {
+          hideSpinnerTable();
+          console.log(res)
+          showAlertContainer(res.message);
           throw new Error('Something went wrong');
         }
       }).catch(err => {

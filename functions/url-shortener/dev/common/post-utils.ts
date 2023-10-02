@@ -17,6 +17,20 @@ const getShortUrlsFromDatabase = async (databases: Databases, log: any, shortUrl
     Query.equal('shortUrl', shortUrl)
   ]);
 }
+
+const getUrlsByAliasFromDatabase = async (
+  databases: Databases,
+  log: any,
+  alias: string
+) => {
+  log('Starting to list documents by alias');
+  return await databases.listDocuments(config.databaseId, config.collectionId, [
+    Query.offset(0),
+    Query.equal('alias', alias),
+    Query.select(['url', 'shortUrl', 'shortUrlFull', 'alias', 'createdAt'])
+  ]);
+};
+
 const getNewShortCode = async (databases: Databases, log: any) => {
   log('Checking if short code exists in the database. . .')
   let retries = 0;
@@ -89,7 +103,6 @@ export const createShortUrlRecord = async (databases: Databases, originalUrl: st
   }
 }
 
-
 export const deleteShortUrlRecord = async (
   databases: Databases,
   maybeFullShortUrl: string,
@@ -132,6 +145,55 @@ export const deleteShortUrlRecord = async (
         statusCode: 400,
         ok: false,
         message: `No existing record was found.`,
+      };
+    }
+  } catch (err) {
+    log('In deleteShortUrlRecord catch');
+    log(err);
+    error(err);
+    return {
+      statusCode: 500,
+      ok: false,
+      message: `Failed to delete short url.`,
+    };
+  }
+};
+
+export const getUrlsByAlias = async (
+  databases: Databases,
+  alias: string,
+  log: any,
+  error: any
+) => {
+  try {
+    log(`Searching records by Alias: ${alias}`);
+    const existingRecords = await getUrlsByAliasFromDatabase(
+      databases,
+      log,
+      alias
+    );
+    log(
+      'Finished fetching existing records from database by alias, checking result . . .'
+    );
+    if (existingRecords && existingRecords.documents.length > 0) {
+      log('In existing records');
+      log('Result is: ');
+      log(existingRecords);
+
+        return {
+          statusCode: 200,
+          ok: true,
+          message: `Found ${existingRecords.documents.length} records.`,
+          result: existingRecords.documents,
+        };
+    } else {
+      log('No records found. Result: ');
+      log(existingRecords);
+      return {
+        statusCode: 404,
+        ok: false,
+        message: `Did not found any URLs by alias ${alias}.`,
+        result: []
       };
     }
   } catch (err) {

@@ -108,4 +108,16 @@ Refer to [Package JSON](package.json) file
   })
 ```
 
+
+
+- `/search`:
+- - Search Short URL records by alias
+- - Allows POST method only
+- - Must have `'Content-Type': 'application/json'` header
+- - Allowed payload example:
+```
+  JSON.stringify({
+    alias: ALIAS
+  })
+```
 Refer to the [template](functions/url-shortener/dev/ui/index.html) to see how it is used in the simple frontend.

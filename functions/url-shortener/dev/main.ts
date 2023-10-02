@@ -4,10 +4,16 @@ import {
 import { IAppwriteRequestData } from './common/types.js';
 import config from './common/config.js';
 import { generateBackendResources } from './common/backend-resources-utils.js';
-import { containsShortUrlInPath, getShortUrls, getStaticFile, getUrlAndRedirect } from './common/get-utils.js';
+import {
+  containsShortUrlInPath,
+  getShortUrls,
+  getStaticFile,
+  getUrlAndRedirect
+} from './common/get-utils.js';
 import {
   createShortUrlRecord,
   deleteShortUrlRecord,
+  getUrlsByAlias
 } from './common/post-utils.js';
 
 export default async ({ req, res, log, error }: { req: IAppwriteRequestData; res: any; log: any; error: any }) => {
@@ -174,6 +180,46 @@ export default async ({ req, res, log, error }: { req: IAppwriteRequestData; res
       log,
       error
     );
+    return res.json(result);
+  }
+
+  
+  if (req.method === 'POST' && req.path === '/search') {
+    if (req.headers['content-type'] !== 'application/json') {
+      error('Invalid Header. Content-Type must be application/json.');
+      return res.json(
+        {
+          ok: false,
+          message: `Invalid Header. Content-Type must be application/json.`,
+        },
+        400
+      );
+    }
+    if (!req.body) {
+      error('No body was found.');
+      return res.json({ ok: false, message: `No body was found.` }, 400);
+    }
+    // const payload = JSON.parse(req.body);
+    // const payload = req.body;
+    const payload = JSON.parse(req.bodyRaw);
+    if (!payload) {
+      error('No payload was found.');
+      return res.json({ ok: false, message: `No payload was found.` }, 400);
+    }
+    log('Payload: ');
+    log(payload);
+
+    if (!payload.alias) {
+      error('No alias was found in the payload.');
+      return res.json(
+        { ok: false, message: `No alias was found in the payload.` },
+        400
+      );
+    }
+
+    const alias = payload.alias;
+    log('Going into searchUrlsByAlias');
+    const result = await getUrlsByAlias(databases, alias, log, error);
     return res.json(result);
   }
 

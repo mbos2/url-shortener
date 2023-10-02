@@ -164,19 +164,19 @@ export default async ({ req, res, log, error }: { req: IAppwriteRequestData; res
     log('Payload: ');
     log(payload);
 
-    if (!payload.shortUrl) {
-      error('No shortUrl was found in the payload.');
+    if (!payload.id) {
+      error('No id was found in the payload.');
       return res.json(
-        { ok: false, message: `No shortUrl was found in the payload.` },
+        { ok: false, message: `No id was found in the payload.` },
         400
       );
     }
 
-    const shortUrl = payload.shortUrl;
+    const id = payload.id;
     log('Goint into deleteShortUrlRecord');
     const result = await deleteShortUrlRecord(
       databases,
-      shortUrl,      
+      id,      
       log,
       error
     );

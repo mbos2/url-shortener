@@ -143,15 +143,16 @@ export default async ({ req, res, log, error }) => {
         }
         log('Payload: ');
         log(payload);
-        if (!payload.shortUrl) {
-            error('No shortUrl was found in the payload.');
-            return res.json({ ok: false, message: `No shortUrl was found in the payload.` }, 400);
+        if (!payload.id) {
+            error('No id was found in the payload.');
+            return res.json({ ok: false, message: `No id was found in the payload.` }, 400);
         }
-        const shortUrl = payload.shortUrl;
+        const id = payload.id;
         log('Goint into deleteShortUrlRecord');
-        const result = await deleteShortUrlRecord(databases, shortUrl, log, error);
+        const result = await deleteShortUrlRecord(databases, id, log, error);
         return res.json(result);
     }
+  
     if (req.method === 'POST' && req.path === '/search') {
         if (req.headers['content-type'] !== 'application/json') {
             error('Invalid Header. Content-Type must be application/json.');
@@ -180,8 +181,8 @@ export default async ({ req, res, log, error }) => {
         const alias = payload.alias;
         log('Going into searchUrlsByAlias');
         const result = await getUrlsByAlias(databases, alias, log, error);
-        return res.json(result);
     }
+  
     // Return HTML
     return res.send(getStaticFile('index.html'), 200, {
         'Content-Type': 'text/html; charset=utf-8',

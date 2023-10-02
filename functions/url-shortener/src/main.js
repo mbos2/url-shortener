@@ -161,7 +161,5 @@ export default async ({ req, res, log, error }) => {
     // Return HTML
     return res.send(getStaticFile('index.html'), 200, {
         'Content-Type': 'text/html; charset=utf-8',
-        'x-open-runtimes-logs': encodeURIComponent(logs.join('\n')),
-        'x-open-runtimes-errors': encodeURIComponent(errors.join('\n'))
     });
 };
